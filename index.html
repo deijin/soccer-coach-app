@@ -19,6 +19,7 @@
                 <button id="players-btn" class="menu-btn">選手メモ</button>
                 <button id="practice-btn" class="menu-btn">練習メニュー</button>
                 <button id="diary-btn" class="menu-btn">指導日記</button>
+                <button id="matches-btn" class="menu-btn">試合履歴</button>
                 
                 <div class="data-management">
                     <button id="export-btn" class="data-btn">データのエクスポート</button>
@@ -116,6 +117,52 @@
                 </div>
                 <div class="action-bar">
                     <button id="save-diary">保存</button>
+                </div>
+            </section>
+            
+            <!-- 試合履歴セクション -->
+            <section id="matches-section" class="content-section hidden">
+                <h2>試合履歴</h2>
+                <div class="action-bar">
+                    <button id="add-match-btn">試合を追加</button>
+                    <button id="back-from-matches" class="back-btn">戻る</button>
+                </div>
+                <div id="matches-list" class="list-container"></div>
+                
+                <div id="match-detail" class="detail-container hidden">
+                    <h3 id="match-detail-title">試合詳細</h3>
+                    <div class="form-group">
+                        <label for="match-date">日時：</label>
+                        <input type="date" id="match-date" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="match-type">試合形式：</label>
+                        <input type="text" id="match-type" placeholder="練習試合/公式戦名" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="match-opponent">対戦相手：</label>
+                        <input type="text" id="match-opponent" autocomplete="off">
+                    </div>
+                    <div class="form-group match-result-group">
+                        <label>勝敗（得失点）：</label>
+                        <div class="score-input">
+                            <input type="number" id="match-goals-for" min="0" placeholder="自チーム" class="score-field">
+                            <span class="score-separator">-</span>
+                            <input type="number" id="match-goals-against" min="0" placeholder="相手チーム" class="score-field">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="match-scorers">得点者：</label>
+                        <textarea id="match-scorers" placeholder="例: 佐藤(2), 田中, 鈴木"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="match-comments">感想・メモ：</label>
+                        <textarea id="match-comments"></textarea>
+                    </div>
+                    <div class="action-bar">
+                        <button id="save-match">保存</button>
+                        <button id="back-from-match-detail" class="back-btn">戻る</button>
+                    </div>
                 </div>
             </section>
         </main>

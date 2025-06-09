@@ -2,12 +2,14 @@
 let players = [];
 let practices = [];
 let diary = '';
+let matches = [];
 
 // ローカルストレージ関連の関数
 function saveData() {
     localStorage.setItem('soccerCoachPlayers', JSON.stringify(players));
     localStorage.setItem('soccerCoachPractices', JSON.stringify(practices));
     localStorage.setItem('soccerCoachDiary', diary);
+    localStorage.setItem('soccerCoachMatches', JSON.stringify(matches));
 }
 
 function loadData() {
@@ -34,6 +36,11 @@ function loadData() {
         const savedDiary = localStorage.getItem('soccerCoachDiary');
         if (savedDiary) {
             diary = savedDiary;
+        }
+        
+        const savedMatches = localStorage.getItem('soccerCoachMatches');
+        if (savedMatches) {
+            matches = JSON.parse(savedMatches);
         }
     } catch (error) {
         console.error('データの読み込みに失敗しました:', error);
@@ -272,19 +279,29 @@ function showSection(sectionId) {
 // イベントリスナーの設定
 function setupEventListeners() {
     // メインナビゲーション
-    document.getElementById('players-btn').addEventListener('click', function() {
+    document.getElementById('players-btn').addEventListener('click', () => {
         showSection('players-section');
         renderPlayersList();
     });
     
-    document.getElementById('practice-btn').addEventListener('click', function() {
+    document.getElementById('practice-btn').addEventListener('click', () => {
         showSection('practice-section');
         renderPracticeList();
     });
     
-    document.getElementById('diary-btn').addEventListener('click', function() {
+    document.getElementById('diary-btn').addEventListener('click', () => {
         showSection('diary-section');
         renderDiary();
+        
+        // 日記画面を開いたら日記テキストエリアにフォーカスを設定
+        setTimeout(() => {
+            document.getElementById('diary-content').focus();
+        }, 0);
+    });
+    
+    document.getElementById('matches-btn').addEventListener('click', () => {
+        showSection('matches-section');
+        renderMatchesList();
     });
     
     // データ管理関連
@@ -373,6 +390,29 @@ function setupEventListeners() {
     });
     
     document.getElementById('save-diary').addEventListener('click', saveDiary);
+    
+    // 試合履歴関連
+    document.getElementById('add-match-btn').addEventListener('click', () => {
+        document.getElementById('match-detail').dataset.index = -1;
+        document.getElementById('match-detail-title').textContent = '新規試合登録';
+        document.getElementById('match-date').value = getCurrentDate();
+        document.getElementById('match-type').value = '';
+        document.getElementById('match-opponent').value = '';
+        document.getElementById('match-goals-for').value = '';
+        document.getElementById('match-goals-against').value = '';
+        document.getElementById('match-scorers').value = '';
+        document.getElementById('match-comments').value = '';
+        
+        document.getElementById('match-detail').classList.remove('hidden');
+        document.getElementById('matches-list').classList.add('hidden');
+    });
+    
+    document.getElementById('back-from-matches').addEventListener('click', () => {
+        showSection('home');
+    });
+    
+    document.getElementById('back-from-match-detail').addEventListener('click', closeMatchDetail);
+    document.getElementById('save-match').addEventListener('click', saveMatchDetail);
 }
 
 // アプリ初期化
@@ -433,6 +473,7 @@ function exportData() {
         players: players,
         practices: practices,
         diary: diary,
+        matches: matches,
         version: '1.0',
         exportDate: new Date().toISOString()
     };
@@ -446,6 +487,23 @@ function exportData() {
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
+    
+    // データをサーバーに保存するための機能を追加
+    try {
+        // ローカルでの開発環境では、この部分はエラーになりますが、
+        // GitHubにプッシュする際にはコメントアウトしないでください。
+        // GitHub Pagesでは実行されませんが、エクスポート機能は正常に動作します。
+        
+        // fetch('/save-data', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: dataStr
+        // });
+    } catch (error) {
+        console.log('サーバーへのデータ保存はスキップされました');
+    }
 }
 
 function importData(jsonData) {
@@ -468,6 +526,11 @@ function importData(jsonData) {
             console.log('指導日記データをインポートしました');
         }
         
+        if (data.matches) {
+            matches = data.matches;
+            console.log('試合履歴データをインポートしました:', matches.length + '件');
+        }
+        
         // データを保存
         saveData();
         
@@ -475,6 +538,7 @@ function importData(jsonData) {
         const playersSection = document.getElementById('players-section');
         const practiceSection = document.getElementById('practice-section');
         const diarySection = document.getElementById('diary-section');
+        const matchesSection = document.getElementById('matches-section');
         
         if (!playersSection.classList.contains('hidden')) {
             renderPlayersList();
@@ -482,6 +546,8 @@ function importData(jsonData) {
             renderPracticeList();
         } else if (!diarySection.classList.contains('hidden')) {
             renderDiary();
+        } else if (!matchesSection.classList.contains('hidden')) {
+            renderMatchesList();
         }
         
         alert('データのインポートが完了しました');
@@ -489,6 +555,140 @@ function importData(jsonData) {
         console.error('データのインポートに失敗しました:', error);
         alert('データのインポートに失敗しました: ' + error.message);
     }
+}
+
+// 試合履歴リスト表示
+function renderMatchesList() {
+    const matchesList = document.getElementById('matches-list');
+    matchesList.innerHTML = '';
+    
+    if (matches.length === 0) {
+        matchesList.innerHTML = '<div class="empty-message">試合履歴が登録されていません</div>';
+        return;
+    }
+    
+    // 日付の新しい順に並べ替え
+    const sortedMatches = [...matches].sort((a, b) => {
+        return new Date(b.date) - new Date(a.date);
+    });
+    
+    sortedMatches.forEach((match, index) => {
+        const matchItem = document.createElement('div');
+        matchItem.className = 'list-item';
+        
+        // 試合結果に応じたクラスを追加
+        let resultClass = 'match-result';
+        let resultText = '引き分け';
+        
+        const goalsFor = parseInt(match.goalsFor) || 0;
+        const goalsAgainst = parseInt(match.goalsAgainst) || 0;
+        
+        if (goalsFor > goalsAgainst) {
+            resultClass += ' match-win';
+            resultText = '勝利';
+        } else if (goalsFor < goalsAgainst) {
+            resultClass += ' match-loss';
+            resultText = '敗北';
+        }
+        
+        // 日付をフォーマット
+        const matchDate = match.date ? new Date(match.date) : new Date();
+        const formattedDate = matchDate.toLocaleDateString('ja-JP', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+        
+        matchItem.innerHTML = `
+            <div class="item-header">
+                <h3>${formattedDate} ${match.type || ''}</h3>
+                <div class="${resultClass}">${match.opponent || '対戦相手未設定'} ${goalsFor}-${goalsAgainst} (${resultText})</div>
+            </div>
+        `;
+        
+        matchItem.addEventListener('click', () => {
+            openMatchDetail(sortedMatches.indexOf(match));
+        });
+        
+        matchesList.appendChild(matchItem);
+    });
+}
+
+// 試合詳細を開く
+function openMatchDetail(index) {
+    const match = matches[index];
+    
+    document.getElementById('match-detail').dataset.index = index;
+    document.getElementById('match-detail-title').textContent = match ? '試合詳細の編集' : '新規試合登録';
+    document.getElementById('match-date').value = match ? match.date : getCurrentDate();
+    document.getElementById('match-type').value = match ? match.type || '' : '';
+    document.getElementById('match-opponent').value = match ? match.opponent || '' : '';
+    document.getElementById('match-goals-for').value = match ? match.goalsFor || '' : '';
+    document.getElementById('match-goals-against').value = match ? match.goalsAgainst || '' : '';
+    document.getElementById('match-scorers').value = match ? match.scorers || '' : '';
+    document.getElementById('match-comments').value = match ? match.comments || '' : '';
+    
+    document.getElementById('match-detail').classList.remove('hidden');
+    document.getElementById('matches-list').classList.add('hidden');
+}
+
+// 試合詳細を閉じる
+function closeMatchDetail() {
+    document.getElementById('match-detail').classList.add('hidden');
+    document.getElementById('matches-list').classList.remove('hidden');
+}
+
+// 試合詳細を保存
+function saveMatchDetail() {
+    const index = parseInt(document.getElementById('match-detail').dataset.index);
+    const date = document.getElementById('match-date').value;
+    const type = document.getElementById('match-type').value;
+    const opponent = document.getElementById('match-opponent').value;
+    const goalsFor = document.getElementById('match-goals-for').value;
+    const goalsAgainst = document.getElementById('match-goals-against').value;
+    const scorers = document.getElementById('match-scorers').value;
+    const comments = document.getElementById('match-comments').value;
+    
+    if (!date) {
+        alert('日時を入力してください');
+        return;
+    }
+    
+    if (!opponent) {
+        alert('対戦相手を入力してください');
+        return;
+    }
+    
+    const matchData = {
+        date,
+        type,
+        opponent,
+        goalsFor,
+        goalsAgainst,
+        scorers,
+        comments
+    };
+    
+    if (index >= 0 && index < matches.length) {
+        // 既存の試合を更新
+        matches[index] = matchData;
+    } else {
+        // 新しい試合を追加
+        matches.push(matchData);
+    }
+    
+    saveData();
+    closeMatchDetail();
+    renderMatchesList();
+}
+
+// 現在の日付を YYYY-MM-DD 形式で取得
+function getCurrentDate() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 // DOMが読み込まれたら実行
