@@ -272,27 +272,36 @@ function showSection(sectionId) {
 // イベントリスナーの設定
 function setupEventListeners() {
     // メインナビゲーション
-    document.getElementById('players-btn').addEventListener('click', () => {
+    document.getElementById('players-btn').addEventListener('click', function() {
         showSection('players-section');
         renderPlayersList();
     });
     
-    document.getElementById('practice-btn').addEventListener('click', () => {
+    document.getElementById('practice-btn').addEventListener('click', function() {
         showSection('practice-section');
         renderPracticeList();
     });
     
-    document.getElementById('diary-btn').addEventListener('click', () => {
+    document.getElementById('diary-btn').addEventListener('click', function() {
         showSection('diary-section');
         renderDiary();
-        
-        // 日記画面を開いたら日記テキストエリアにフォーカスを設定
-        setTimeout(() => {
-            document.getElementById('diary-content').focus();
-        }, 0);
     });
     
-    // 選手メモ関連
+    // データ管理関連
+    document.getElementById('export-btn').addEventListener('click', exportData);
+    
+    document.getElementById('import-file').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                importData(e.target.result);
+            };
+            reader.readAsText(file);
+        }
+    });
+    
+    // 選手関連
     document.getElementById('add-player-btn').addEventListener('click', () => {
         document.getElementById('player-detail').dataset.index = -1;
         document.getElementById('player-detail-name').textContent = '新規選手';
@@ -409,6 +418,61 @@ function setupMobileOptimization() {
     // iOS のホーム画面に追加された場合のフルスクリーン対応
     if (window.navigator.standalone) {
         document.body.classList.add('ios-standalone');
+    }
+}
+
+// データのエクスポート/インポート機能
+function exportData() {
+    const data = {
+        players: players,
+        practices: practices,
+        diary: diary,
+        version: '1.0',
+        exportDate: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(data);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'soccer-coach-data.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+function importData(jsonData) {
+    try {
+        const data = JSON.parse(jsonData);
+        
+        if (data.players) {
+            players = data.players;
+        }
+        
+        if (data.practices) {
+            practices = data.practices;
+        }
+        
+        if (data.diary) {
+            diary = data.diary;
+        }
+        
+        saveData();
+        
+        // 画面を更新
+        if (document.getElementById('players-section').classList.contains('hidden') === false) {
+            renderPlayersList();
+        } else if (document.getElementById('practice-section').classList.contains('hidden') === false) {
+            renderPracticeList();
+        } else if (document.getElementById('diary-section').classList.contains('hidden') === false) {
+            renderDiary();
+        }
+        
+        alert('データのインポートが完了しました');
+    } catch (error) {
+        console.error('データのインポートに失敗しました:', error);
+        alert('データのインポートに失敗しました: ' + error.message);
     }
 }
 
