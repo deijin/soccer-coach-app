@@ -260,19 +260,33 @@ function saveDiary() {
 
 // 画面遷移関連の関数
 function showSection(sectionId) {
-    // すべてのセクションを非表示
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.add('hidden');
-    });
+    console.log('showSection関数が呼び出されました, sectionId:', sectionId);
     
-    // ホームメニューの表示/非表示
-    const homeMenu = document.querySelector('.home-menu');
-    if (sectionId === 'home') {
-        homeMenu.classList.remove('hidden');
-    } else {
-        homeMenu.classList.add('hidden');
-        // 指定されたセクションを表示
-        document.getElementById(sectionId).classList.remove('hidden');
+    try {
+        // すべてのセクションを非表示
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.add('hidden');
+        });
+        
+        // ホームメニューの表示/非表示
+        const homeMenu = document.querySelector('.home-menu');
+        if (sectionId === 'home') {
+            homeMenu.classList.remove('hidden');
+        } else {
+            homeMenu.classList.add('hidden');
+            
+            // 指定されたセクションを表示
+            const targetSection = document.getElementById(sectionId);
+            if (!targetSection) {
+                console.error(`${sectionId} 要素が見つかりません`);
+                return;
+            }
+            
+            targetSection.classList.remove('hidden');
+            console.log(`${sectionId} を表示しました`);
+        }
+    } catch (error) {
+        console.error('画面遷移中にエラーが発生しました:', error);
     }
 }
 
@@ -299,7 +313,8 @@ function setupEventListeners() {
         }, 0);
     });
     
-    document.getElementById('matches-btn').addEventListener('click', () => {
+    document.getElementById('matches-btn').addEventListener('click', function() {
+        console.log('試合履歴ボタンがクリックされました');
         showSection('matches-section');
         renderMatchesList();
     });
@@ -559,77 +574,108 @@ function importData(jsonData) {
 
 // 試合履歴リスト表示
 function renderMatchesList() {
-    const matchesList = document.getElementById('matches-list');
-    matchesList.innerHTML = '';
+    console.log('renderMatchesList関数が呼び出されました');
     
-    if (matches.length === 0) {
-        matchesList.innerHTML = '<div class="empty-message">試合履歴が登録されていません</div>';
-        return;
-    }
-    
-    // 日付の新しい順に並べ替え
-    const sortedMatches = [...matches].sort((a, b) => {
-        return new Date(b.date) - new Date(a.date);
-    });
-    
-    sortedMatches.forEach((match, index) => {
-        const matchItem = document.createElement('div');
-        matchItem.className = 'list-item';
-        
-        // 試合結果に応じたクラスを追加
-        let resultClass = 'match-result';
-        let resultText = '引き分け';
-        
-        const goalsFor = parseInt(match.goalsFor) || 0;
-        const goalsAgainst = parseInt(match.goalsAgainst) || 0;
-        
-        if (goalsFor > goalsAgainst) {
-            resultClass += ' match-win';
-            resultText = '勝利';
-        } else if (goalsFor < goalsAgainst) {
-            resultClass += ' match-loss';
-            resultText = '敗北';
+    try {
+        const matchesList = document.getElementById('matches-list');
+        if (!matchesList) {
+            console.error('matches-list要素が見つかりません');
+            return;
         }
         
-        // 日付をフォーマット
-        const matchDate = match.date ? new Date(match.date) : new Date();
-        const formattedDate = matchDate.toLocaleDateString('ja-JP', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
+        matchesList.innerHTML = '';
+        
+        console.log('試合データ:', matches);
+        
+        if (!matches || matches.length === 0) {
+            matchesList.innerHTML = '<div class="empty-message">試合履歴が登録されていません</div>';
+            return;
+        }
+        
+        // 日付の新しい順に並べ替え
+        const sortedMatches = [...matches].sort((a, b) => {
+            return new Date(b.date) - new Date(a.date);
         });
         
-        matchItem.innerHTML = `
-            <div class="item-header">
-                <h3>${formattedDate} ${match.type || ''}</h3>
-                <div class="${resultClass}">${match.opponent || '対戦相手未設定'} ${goalsFor}-${goalsAgainst} (${resultText})</div>
-            </div>
-        `;
-        
-        matchItem.addEventListener('click', () => {
-            openMatchDetail(sortedMatches.indexOf(match));
+        sortedMatches.forEach((match, index) => {
+            const matchItem = document.createElement('div');
+            matchItem.className = 'list-item';
+            
+            // 試合結果に応じたクラスを追加
+            let resultClass = 'match-result';
+            let resultText = '引き分け';
+            
+            const goalsFor = parseInt(match.goalsFor) || 0;
+            const goalsAgainst = parseInt(match.goalsAgainst) || 0;
+            
+            if (goalsFor > goalsAgainst) {
+                resultClass += ' match-win';
+                resultText = '勝利';
+            } else if (goalsFor < goalsAgainst) {
+                resultClass += ' match-loss';
+                resultText = '敗北';
+            }
+            
+            // 日付をフォーマット
+            const matchDate = match.date ? new Date(match.date) : new Date();
+            const formattedDate = matchDate.toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            
+            matchItem.innerHTML = `
+                <div class="item-header">
+                    <h3>${formattedDate} ${match.type || ''}</h3>
+                    <div class="${resultClass}">${match.opponent || '対戦相手未設定'} ${goalsFor}-${goalsAgainst} (${resultText})</div>
+                </div>
+            `;
+            
+            matchItem.addEventListener('click', () => {
+                openMatchDetail(index);
+            });
+            
+            matchesList.appendChild(matchItem);
         });
         
-        matchesList.appendChild(matchItem);
-    });
+        console.log('試合リストの表示が完了しました');
+    } catch (error) {
+        console.error('試合リストの表示中にエラーが発生しました:', error);
+    }
 }
 
 // 試合詳細を開く
 function openMatchDetail(index) {
-    const match = matches[index];
+    console.log('openMatchDetail関数が呼び出されました, index:', index);
     
-    document.getElementById('match-detail').dataset.index = index;
-    document.getElementById('match-detail-title').textContent = match ? '試合詳細の編集' : '新規試合登録';
-    document.getElementById('match-date').value = match ? match.date : getCurrentDate();
-    document.getElementById('match-type').value = match ? match.type || '' : '';
-    document.getElementById('match-opponent').value = match ? match.opponent || '' : '';
-    document.getElementById('match-goals-for').value = match ? match.goalsFor || '' : '';
-    document.getElementById('match-goals-against').value = match ? match.goalsAgainst || '' : '';
-    document.getElementById('match-scorers').value = match ? match.scorers || '' : '';
-    document.getElementById('match-comments').value = match ? match.comments || '' : '';
-    
-    document.getElementById('match-detail').classList.remove('hidden');
-    document.getElementById('matches-list').classList.add('hidden');
+    try {
+        const match = matches[index];
+        console.log('選択された試合データ:', match);
+        
+        const detailElement = document.getElementById('match-detail');
+        if (!detailElement) {
+            console.error('match-detail要素が見つかりません');
+            return;
+        }
+        
+        detailElement.dataset.index = index;
+        
+        document.getElementById('match-detail-title').textContent = match ? '試合詳細の編集' : '新規試合登録';
+        document.getElementById('match-date').value = match ? match.date : getCurrentDate();
+        document.getElementById('match-type').value = match ? match.type || '' : '';
+        document.getElementById('match-opponent').value = match ? match.opponent || '' : '';
+        document.getElementById('match-goals-for').value = match ? match.goalsFor || '' : '';
+        document.getElementById('match-goals-against').value = match ? match.goalsAgainst || '' : '';
+        document.getElementById('match-scorers').value = match ? match.scorers || '' : '';
+        document.getElementById('match-comments').value = match ? match.comments || '' : '';
+        
+        detailElement.classList.remove('hidden');
+        document.getElementById('matches-list').classList.add('hidden');
+        
+        console.log('試合詳細画面を表示しました');
+    } catch (error) {
+        console.error('試合詳細の表示中にエラーが発生しました:', error);
+    }
 }
 
 // 試合詳細を閉じる
