@@ -299,6 +299,7 @@ footer {
     text-align: center;
     border: none;
     width: 100%;
+    display: block;
 }
 
 .data-btn:hover {
@@ -307,4 +308,5 @@ footer {
 
 .import-label {
     display: block;
+    width: 100%;
 } 

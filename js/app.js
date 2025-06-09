@@ -293,9 +293,15 @@ function setupEventListeners() {
     document.getElementById('import-file').addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file) {
+            console.log('ファイルが選択されました:', file.name);
             const reader = new FileReader();
             reader.onload = function(e) {
+                console.log('ファイルを読み込みました');
                 importData(e.target.result);
+            };
+            reader.onerror = function(e) {
+                console.error('ファイル読み込みエラー:', e);
+                alert('ファイルの読み込みに失敗しました');
             };
             reader.readAsText(file);
         }
@@ -445,27 +451,36 @@ function exportData() {
 function importData(jsonData) {
     try {
         const data = JSON.parse(jsonData);
+        console.log('インポートするデータ:', data); // デバッグ用
         
         if (data.players) {
             players = data.players;
+            console.log('選手データをインポートしました:', players.length + '件');
         }
         
         if (data.practices) {
             practices = data.practices;
+            console.log('練習メニューデータをインポートしました:', practices.length + '件');
         }
         
         if (data.diary) {
             diary = data.diary;
+            console.log('指導日記データをインポートしました');
         }
         
+        // データを保存
         saveData();
         
-        // 画面を更新
-        if (document.getElementById('players-section').classList.contains('hidden') === false) {
+        // 現在の画面を更新
+        const playersSection = document.getElementById('players-section');
+        const practiceSection = document.getElementById('practice-section');
+        const diarySection = document.getElementById('diary-section');
+        
+        if (!playersSection.classList.contains('hidden')) {
             renderPlayersList();
-        } else if (document.getElementById('practice-section').classList.contains('hidden') === false) {
+        } else if (!practiceSection.classList.contains('hidden')) {
             renderPracticeList();
-        } else if (document.getElementById('diary-section').classList.contains('hidden') === false) {
+        } else if (!diarySection.classList.contains('hidden')) {
             renderDiary();
         }
         
