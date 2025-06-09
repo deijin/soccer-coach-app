@@ -1,0 +1,281 @@
+/* 基本スタイル */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 5px;
+}
+
+h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.back-btn {
+    background-color: #95a5a6;
+}
+
+.back-btn:hover {
+    background-color: #7f8c8d;
+}
+
+textarea, input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.diary-textarea {
+    min-height: 300px;
+}
+
+/* ホーム画面 */
+.home-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.menu-btn {
+    padding: 15px;
+    font-size: 18px;
+    text-align: center;
+}
+
+/* コンテンツセクション */
+.content-section {
+    margin-top: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+.action-bar {
+    margin: 15px 0;
+    display: flex;
+    gap: 10px;
+}
+
+/* リスト表示 */
+.list-container {
+    margin-top: 20px;
+}
+
+.list-item {
+    background-color: white;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.list-item:hover {
+    background-color: #f0f7ff;
+}
+
+/* 選手リスト特有のスタイル */
+.player-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.player-name {
+    font-weight: bold;
+    max-width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.player-position-tag {
+    background-color: #e8f4f8;
+    color: #2980b9;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 詳細表示 */
+.detail-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+footer {
+    margin-top: 40px;
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    h2 {
+        font-size: 20px;
+    }
+    
+    .menu-btn {
+        padding: 15px;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    
+    .action-bar {
+        flex-wrap: wrap;
+    }
+    
+    .action-bar button {
+        margin-bottom: 5px;
+    }
+    
+    /* 選手リストのレイアウト調整 */
+    .player-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .player-name {
+        max-width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .player-position-tag {
+        max-width: 100%;
+    }
+    
+    /* フォーム要素の調整 */
+    input[type="text"], textarea {
+        font-size: 16px; /* iOSでのズームを防止 */
+        padding: 10px;
+    }
+    
+    /* ボタンをタップしやすいサイズに */
+    button {
+        padding: 10px 15px;
+        min-height: 44px; /* タップターゲットの最小サイズ */
+    }
+}
+
+/* YouTubeリンクのスタイル */
+.youtube-link-container {
+    margin-top: 5px;
+}
+
+.youtube-link {
+    display: inline-block;
+    background-color: #ff0000;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.youtube-link:hover {
+    background-color: #cc0000;
+}
+
+/* タッチデバイス用のスタイル */
+.touch-device .list-item {
+    padding: 15px; /* タップしやすいように余白を増やす */
+}
+
+.touch-device button {
+    min-height: 44px; /* タップターゲットの最小サイズ */
+}
+
+/* iOS のホーム画面アプリ用のスタイル */
+.ios-standalone {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+.ios-standalone .container {
+    min-height: 100vh;
+} 
